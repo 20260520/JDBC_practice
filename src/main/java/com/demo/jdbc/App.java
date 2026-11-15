@@ -17,16 +17,25 @@ public class App
         String username= "root";
         String password= "";
         Connection conn = DriverManager.getConnection(url,username,password);
-        //3.定义sql
-        String sql = "insert into user(uuid, name) values(20, '20');";
-        //4.获取执行sql的对象statement
-        Statement stmt = conn.createStatement();
-        //5．执行sql
-        int count = stmt.executeUpdate(sql); //受影响的行数
-        //6. 处理结果
-        System.out.println(count);
-        //7. 释放资源 
-        stmt.close(); 
+        try{
+            conn.setAutoCommit(false); //事务保证操作的完整性
+            String sql1 = "delete from user where uuid = 20;";
+            String sql2 = "insert into user(uuid,name) values(9, '9');"; //uuid为9的record已经存在
+            //4.获取执行sql的对象statement
+            Statement stmt = conn.createStatement();
+            //5．执行sql
+            int count = stmt.executeUpdate(sql1); //受影响的行数
+            count = count + stmt.executeUpdate(sql2);
+            //提交
+            conn.commit();
+            //6. 处理结果
+            System.out.println(count);
+            //7. 释放资源
+            stmt.close();
+        }catch(Exception e){
+            conn.rollback();
+        }    
+        //7. 释放资源  
         conn.close();
     }
 }
